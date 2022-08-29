@@ -1,0 +1,70 @@
+version: '3'
+services:
+  api:
+    restart: always
+    build:
+      context: .
+    volumes:
+      - .:/api
+      - /api/node_modules
+      - public-data:/api/public
+      - tmp-data:/api/tmp
+      - log-data:/api/log
+      - bundle-data:/usr/local/bundle
+    command: sh launch.sh
+    tty: true
+    stdin_open: true
+    depends_on:
+      - db
+      - elasticsearch
+      - nginx
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  db:
+    restart: always
+    image: mysql:8.0.25
+    platform: linux/amd64
+    environment:
+      MYSQL_DATABASE: test_development
+      MYSQL_USER: admin
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PASSWORD: password
+      TZ: 'Asia/Tokyo'
+      MYSQL_ROOT_HOST: "%"
+    tty: true
+    command: mysqld --character-set-server=utf8mb4 --explicit_defaults_for_timestamp=true --default-authentication-plugin=mysql_native_password    
+    ports:
+      - 3306:3306
+
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - 80:80
+      - 443:80
+    volumes:
+      - public-data:/api/public
+      - tmp-data:/api/tmp
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    environment:
+      discovery.type: single-node
+      cluster.name: docker-cluster
+      bootstrap.memory_lock: 'true'
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    depends_on:
+      - db
+
+volumes:
+  public-data:
+  tmp-data:
+  log-data:
+  bundle-data:
