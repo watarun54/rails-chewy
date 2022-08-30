@@ -21,11 +21,11 @@ user_ids = User.all.pluck(:id)
   receipts = []
   1000.times do |each_idx|
     receipts << Receipt.new(
-                title:  "receipt_#{batch_idx}_#{each_idx}",
-                amount: rand(1000..100_000),
-                issued_at: Random.rand(Date.new(2018, 1, 1)..Date.new(2022, 1, 1)),
-                user_id: user_ids.sample
-              )
+                  title:  "receipt_#{batch_idx}_#{each_idx}",
+                  amount: rand(1000..100_000),
+                  issued_at: Random.rand(Date.new(2018, 1, 1)..Date.new(2022, 1, 1)),
+                  user_id: user_ids.sample
+                )
   end
   Receipt.import! receipts
 end
